@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("inputs.txt")
+	file, err := os.Open("test.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,18 +136,25 @@ func getMostCommonAtIndex(binaryNumbers [][]string, index int) string {
 	var count0 int
 
 	for _, number := range binaryNumbers {
+		//log.Printf("%v", number)
+		//	println("searching at index ", index)
 		if number[index] == "1" {
+			//println(number[index])
 			count1++
 		} else {
+			//println(number[index])
 			count0++
 		}
 	}
 
 	if count1 > count0 {
+		//println("Most common bit was 1")
 		return "1"
 	} else if count0 == count1 {
+		//println("Equal bit count, returning 1 ")
 		return "1"
 	}
+	// println("Most common bit was 0")
 	return "0"
 }
 
@@ -172,13 +179,18 @@ func getLeastCommonAtIndex(binaryNumbers [][]string, index int) string {
 }
 
 func removeValuesWithCommonValueAtIndex(allBinaryNumbers [][]string, mostCommon string, index int) [][]string {
-	mutatedBinaryNumbers := allBinaryNumbers
-
+	//mutatedBinaryNumbers := allBinaryNumbers
+	log.Printf("%v", allBinaryNumbers)
 	for i, number := range allBinaryNumbers {
+		println(i)
 		if number[index] != mostCommon {
-			mutatedBinaryNumbers = append(allBinaryNumbers[:i], allBinaryNumbers[i+1:]...)
-
+			allBinaryNumbers = removeIndex(allBinaryNumbers, i)
 		}
 	}
-	return mutatedBinaryNumbers
+	return allBinaryNumbers
+}
+
+func removeIndex(allBinaryNumbers [][]string, index int) [][]string {
+	allBinaryNumbers[index] = allBinaryNumbers[len(allBinaryNumbers)-1]
+	return allBinaryNumbers[:len(allBinaryNumbers)-1]
 }
