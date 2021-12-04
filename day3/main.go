@@ -26,13 +26,12 @@ func main() {
 		bitLength = len(number)
 		var binaryNubers []string = strings.Split(number, "")
 		allBinaryNumbers = append(allBinaryNumbers, binaryNubers)
-		print(allBinaryNumbers)
 	}
 
 	oxyRating, _ := strconv.ParseInt(strings.Join(getOxygenRating(allBinaryNumbers, bitLength), ""), 2, 64)
 	co2Rating, _ := strconv.ParseInt(strings.Join(getC02Rating(allBinaryNumbers, bitLength), ""), 2, 64)
 
-	print(oxyRating * co2Rating)
+	println(oxyRating * co2Rating)
 }
 
 func partOne() {
@@ -57,8 +56,6 @@ func partOne() {
 	}
 	gammaValue := calcGamma(m)
 	epsilonValue := flipBinary(gammaValue)
-
-	println(epsilonValue)
 
 	gammaInt, err := strconv.ParseInt(gammaValue, 2, 64)
 	epsilonInt, err := strconv.ParseInt(epsilonValue, 2, 64)
@@ -113,23 +110,21 @@ func flipBinary(binary string) string {
 }
 
 func getOxygenRating(allBinaryNumbers [][]string, bitLength int) []string {
-
 	for i := 0; i < bitLength-1; i++ {
 		if len(allBinaryNumbers) > 1 {
 			mostCommon := getMostCommonAtIndex(allBinaryNumbers, i)
 			allBinaryNumbers = removeValuesWithCommonValueAtIndex(allBinaryNumbers, mostCommon, i)
 		}
-
 	}
 	return allBinaryNumbers[0]
 }
 
 func getC02Rating(allBinaryNumbers [][]string, bitLength int) []string {
-
 	for i := 0; i < bitLength-1; i++ {
 		if len(allBinaryNumbers) > 1 {
-			mostCommon := getLeastCommonAtIndex(allBinaryNumbers, i)
-			allBinaryNumbers = removeValuesWithCommonValueAtIndex(allBinaryNumbers, mostCommon, i)
+			leastCommon := getLeastCommonAtIndex(allBinaryNumbers, i)
+			allBinaryNumbers = removeValuesWithCommonValueAtIndex(allBinaryNumbers, leastCommon, i)
+
 		}
 
 	}
@@ -153,7 +148,6 @@ func getMostCommonAtIndex(binaryNumbers [][]string, index int) string {
 	} else if count0 == count1 {
 		return "1"
 	}
-
 	return "0"
 }
 
@@ -162,10 +156,10 @@ func getLeastCommonAtIndex(binaryNumbers [][]string, index int) string {
 	var count0 int
 
 	for _, number := range binaryNumbers {
-		if number[index] == "1" {
-			count1++
-		} else {
+		if number[index] == "0" {
 			count0++
+		} else {
+			count1++
 		}
 	}
 
