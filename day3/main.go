@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("test.txt")
+	file, err := os.Open("inputs.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,20 +110,20 @@ func flipBinary(binary string) string {
 }
 
 func getOxygenRating(allBinaryNumbers [][]string, bitLength int) []string {
-	for i := 0; i < bitLength-1; i++ {
-		if len(allBinaryNumbers) > 1 {
+	for i := 0; i <= bitLength; i++ {
+		if len(allBinaryNumbers) != 1 {
 			mostCommon := getMostCommonAtIndex(allBinaryNumbers, i)
-			allBinaryNumbers = removeValuesWithCommonValueAtIndex(allBinaryNumbers, mostCommon, i)
+			allBinaryNumbers = keepValuesWithCommonValueAtIndex(allBinaryNumbers, mostCommon, i)
 		}
 	}
 	return allBinaryNumbers[0]
 }
 
 func getC02Rating(allBinaryNumbers [][]string, bitLength int) []string {
-	for i := 0; i < bitLength-1; i++ {
-		if len(allBinaryNumbers) > 1 {
+	for i := 0; i <= bitLength; i++ {
+		if len(allBinaryNumbers) != 1 {
 			leastCommon := getLeastCommonAtIndex(allBinaryNumbers, i)
-			allBinaryNumbers = removeValuesWithCommonValueAtIndex(allBinaryNumbers, leastCommon, i)
+			allBinaryNumbers = keepValuesWithCommonValueAtIndex(allBinaryNumbers, leastCommon, i)
 
 		}
 
@@ -178,19 +178,16 @@ func getLeastCommonAtIndex(binaryNumbers [][]string, index int) string {
 	return "0"
 }
 
-func removeValuesWithCommonValueAtIndex(allBinaryNumbers [][]string, mostCommon string, index int) [][]string {
+func keepValuesWithCommonValueAtIndex(allBinaryNumbers [][]string, mostCommon string, index int) [][]string {
+	println(index)
+	var numbersToKeep = [][]string{}
 	//mutatedBinaryNumbers := allBinaryNumbers
-	log.Printf("%v", allBinaryNumbers)
-	for i, number := range allBinaryNumbers {
-		println(i)
-		if number[index] != mostCommon {
-			allBinaryNumbers = removeIndex(allBinaryNumbers, i)
+	//log.Printf("%v", allBinaryNumbers)
+	for _, number := range allBinaryNumbers {
+		if number[index] == mostCommon {
+			numbersToKeep = append(numbersToKeep, number)
 		}
 	}
-	return allBinaryNumbers
-}
-
-func removeIndex(allBinaryNumbers [][]string, index int) [][]string {
-	allBinaryNumbers[index] = allBinaryNumbers[len(allBinaryNumbers)-1]
-	return allBinaryNumbers[:len(allBinaryNumbers)-1]
+	log.Printf("%v", numbersToKeep)
+	return numbersToKeep
 }
