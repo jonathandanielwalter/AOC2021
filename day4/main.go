@@ -30,7 +30,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	//var bingoCalledNumbers string
+	var bingoCalledNumbers []string
 	var allBoards []Board
 
 	var previousLineBlank bool = false
@@ -38,7 +38,7 @@ func main() {
 	for scanner.Scan() {
 		row := scanner.Text()
 		if strings.Contains(row, ",") {
-			//bingoCalledNumbers = row
+			bingoCalledNumbers = strings.Split(row, ",")
 			previousLineBlank = false
 		} else if row == "" {
 			previousLineBlank = true
@@ -46,16 +46,62 @@ func main() {
 			if previousLineBlank {
 				var board = createBoard(row) //create new board
 				allBoards = append(allBoards, board)
-				currentBoard = board
+				currentBoard := &board
 				previousLineBlank = false
 
 			} else {
-				addRowAndAddToColumns(currentBoard, row)
+				currentBoard = addRowAndAddToColumns(currentBoard, row)
 				previousLineBlank = false
 			}
 		}
 
 	}
+
+	winner := playBingo(allBoards, bingoCalledNumbers)
+	fmt.Printf("%v", winner)
+}
+
+func playBingo(allBoards []Board, bingoCalledNumbers []string) Board {
+
+	for _, number := range bingoCalledNumbers {
+		for _, board := range allBoards {
+			board = mark(board, number)
+
+			for _, column := range board.Columns {
+				if len(column.Numbers) == 0 {
+					return board
+				}
+			}
+			for _, row := range board.Rows {
+				if len(row.Numbers) == 0 {
+					return board
+				}
+			}
+		}
+	}
+	return Board{}
+}
+
+func mark(board Board, number string) Board {
+	for _, row := range board.Rows {
+		for i := len(row.Numbers) - 1; i >= 0; i-- {
+			//fmt.Printf("comparing %v and %v\n", row.Numbers[i], number)
+			if row.Numbers[i] == number {
+				row.Numbers = append(row.Numbers[:i], row.Numbers[i+1:]...)
+				//	fmt.Printf("%v\n", row.Numbers)
+			}
+		}
+
+		for _, column := range board.Columns {
+			for i := len(column.Numbers) - 1; i >= 0; i-- {
+				if column.Numbers[i] == number {
+					column.Numbers = append(column.Numbers[:i], column.Numbers[i+1:]...)
+				}
+			}
+		}
+	}
+
+	return board
 }
 
 func createBoard(initialRow string) Board {
@@ -72,11 +118,11 @@ func createBoard(initialRow string) Board {
 		board.Columns = append(board.Columns, column)
 	}
 
-	//fmt.Printf("%v", board)
+	fmt.Printf("%v", board)
 	return board
 }
 
-func addRowAndAddToColumns(board Board, newRow string) {
+func addRowAndAddToColumns(board *Board, newRow string) {
 	numbers := strings.Fields(newRow)
 
 	var row Row = Row{}
@@ -86,7 +132,5 @@ func addRowAndAddToColumns(board Board, newRow string) {
 	for i, number := range numbers {
 		board.Columns[i].Numbers = append(board.Columns[i].Numbers, number)
 	}
-
-	fmt.Printf("%v", board.Columns)
-
+	fmt.Println(len(board.Columns[0].Numbers))
 }
