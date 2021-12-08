@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -69,36 +70,53 @@ func main() {
 	// fmt.Printf("%v\n", allBoards[1])
 	// fmt.Printf("%v\n", allBoards[2])
 
-	winner, winningNumberStr := playBingo(allBoards, bingoCalledNumbers)
+	//winner, winningNumberStr := playBingo(allBoards, bingoCalledNumbers)
+
+	var winners []Board
+	var winningNumberStr string
+
+	for _, number := range bingoCalledNumbers {
+		for j := 0; j < len(allBoards)-1; j++ {
+			//for _, board := range allBoards {
+			bingo := playBingo(allBoards[j], number)
+			if bingo {
+				winners = append(winners, allBoards[j])
+				winningNumberStr = number
+				//fmt.Printf("%v\n", allBoards[j])
+				j++
+			}
+			//winners = append(winners, winner)
+			//winningNumberStr = numberstr
+		}
+	}
 
 	winningNumber, _ := strconv.Atoi(winningNumberStr)
 
-	val := calculateRemainingNumbersTotal(winner) * winningNumber
+	println(winningNumber)
+	fmt.Printf("%v\n", winners)
+	val := calculateRemainingNumbersTotal(winners[len(winners)-1]) * winningNumber
 	println(val)
 
 }
 
-func playBingo(allBoards []Board, bingoCalledNumbers []string) (Board, string) {
-	for _, number := range bingoCalledNumbers {
-		for _, board := range allBoards {
-			board = mark(board, number)
-			// println("removing", number)
-			// fmt.Printf("%v\n", board)
-			for _, column := range board.Columns {
-				if !hasNonEmptyValues(column.Numbers) {
-					return board, number
-				}
-			}
-			for _, row := range board.Rows {
-				if !hasNonEmptyValues(row.Numbers) {
-					return board, number
-				}
-			}
+func playBingo(board Board, number string) bool {
+	board = mark(board, number)
+	// println("removing", number)
+	// fmt.Printf("%v\n", board)
+	for _, column := range board.Columns {
+		if !hasNonEmptyValues(column.Numbers) {
+			return true
 		}
-
-		//mark(allBoards[0], number)
 	}
-	return Board{}, ""
+	for _, row := range board.Rows {
+		if !hasNonEmptyValues(row.Numbers) {
+			return true
+		}
+	}
+
+	//mark(allBoards[0], number)
+
+	return false
 }
 
 func mark(board Board, number string) Board {
