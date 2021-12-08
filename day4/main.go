@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ type Column struct {
 }
 
 func main() {
-	file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,78 +34,106 @@ func main() {
 	var allBoards []Board
 
 	var previousLineBlank bool = false
+	var previousLineNumbers bool = false
 	var currentBoard Board
 	for scanner.Scan() {
 		row := scanner.Text()
 		if strings.Contains(row, ",") {
 			bingoCalledNumbers = strings.Split(row, ",")
 			previousLineBlank = false
+			previousLineNumbers = true
+		} else if row == "" && !previousLineNumbers {
+			allBoards = append(allBoards, currentBoard)
+			previousLineBlank = true
+			previousLineNumbers = false
 		} else if row == "" {
 			previousLineBlank = true
+			previousLineNumbers = false
 		} else {
 			if previousLineBlank {
-				var board = createBoard(row) //create new board
-				allBoards = append(allBoards, board)
-				currentBoard := &board
+				currentBoard = createBoard(row) //create new board
+				// currentBoard = currentBoard
 				previousLineBlank = false
 
 			} else {
-				currentBoard = addRowAndAddToColumns(currentBoard, row)
+				currentBoard = addRowAndAddToColumns(&currentBoard, row)
+				//fmt.Printf("%v\n", currentBoard)
 				previousLineBlank = false
 			}
 		}
 
 	}
+	allBoards = append(allBoards, currentBoard)
 
-	winner := playBingo(allBoards, bingoCalledNumbers)
-	fmt.Printf("%v", winner)
+	// fmt.Printf("%v\n", allBoards[0])
+	// fmt.Printf("%v\n", allBoards[1])
+	// fmt.Printf("%v\n", allBoards[2])
+
+	winner, winningNumberStr := playBingo(allBoards, bingoCalledNumbers)
+
+	winningNumber, _ := strconv.Atoi(winningNumberStr)
+
+	val := calculateRemainingNumbersTotal(winner) * winningNumber
+	println(val)
+
 }
 
-func playBingo(allBoards []Board, bingoCalledNumbers []string) Board {
-
+func playBingo(allBoards []Board, bingoCalledNumbers []string) (Board, string) {
 	for _, number := range bingoCalledNumbers {
 		for _, board := range allBoards {
 			board = mark(board, number)
-
+			// println("removing", number)
+			// fmt.Printf("%v\n", board)
 			for _, column := range board.Columns {
-				if len(column.Numbers) == 0 {
-					return board
+				if !hasNonEmptyValues(column.Numbers) {
+					return board, number
 				}
 			}
 			for _, row := range board.Rows {
-				if len(row.Numbers) == 0 {
-					return board
+				if !hasNonEmptyValues(row.Numbers) {
+					return board, number
 				}
 			}
 		}
+
+		//mark(allBoards[0], number)
 	}
-	return Board{}
+	return Board{}, ""
 }
 
 func mark(board Board, number string) Board {
+	//fmt.Printf("%v\n", board)
 	for _, row := range board.Rows {
-		for i := len(row.Numbers) - 1; i >= 0; i-- {
-			//fmt.Printf("comparing %v and %v\n", row.Numbers[i], number)
+		for i := 0; i <= len(row.Numbers)-1; i++ {
+			// fmt.Printf("comparing %v and %v\n", row.Numbers[i], number)
 			if row.Numbers[i] == number {
-				row.Numbers = append(row.Numbers[:i], row.Numbers[i+1:]...)
-				//	fmt.Printf("%v\n", row.Numbers)
+				row.Numbers = remove(row.Numbers, i)
+				// fmt.Printf("Removed %v from %v\n", number, row.Numbers)
 			}
 		}
 
 		for _, column := range board.Columns {
 			for i := len(column.Numbers) - 1; i >= 0; i-- {
 				if column.Numbers[i] == number {
-					column.Numbers = append(column.Numbers[:i], column.Numbers[i+1:]...)
+					column.Numbers = remove(column.Numbers, i)
 				}
 			}
+			//println(len(column.Numbers))
 		}
 	}
 
+	//fmt.Printf("%v\n", board)
 	return board
 }
 
+func remove(slice []string, i int) []string {
+	copy(slice[i:], slice[i+1:]) // Shift a[i+1:] left one index.
+	slice[len(slice)-1] = ""     // Erase last element (write zero value).
+	return slice[:len(slice)-1]
+}
+
 func createBoard(initialRow string) Board {
-	println("creating board")
+	//println("creating board")
 	var board Board = Board{}
 	numbers := strings.Fields(initialRow)
 	var row Row = Row{}
@@ -118,13 +146,12 @@ func createBoard(initialRow string) Board {
 		board.Columns = append(board.Columns, column)
 	}
 
-	fmt.Printf("%v", board)
+	//fmt.Printf("%v", board)
 	return board
 }
 
-func addRowAndAddToColumns(board *Board, newRow string) {
+func addRowAndAddToColumns(board *Board, newRow string) Board {
 	numbers := strings.Fields(newRow)
-
 	var row Row = Row{}
 	row.Numbers = numbers
 	board.Rows = append(board.Rows, row)
@@ -132,5 +159,29 @@ func addRowAndAddToColumns(board *Board, newRow string) {
 	for i, number := range numbers {
 		board.Columns[i].Numbers = append(board.Columns[i].Numbers, number)
 	}
-	fmt.Println(len(board.Columns[0].Numbers))
+
+	return *board
+	//fmt.Printf("%v\n", board)
+}
+
+func hasNonEmptyValues(values []string) bool {
+	for _, str := range values {
+		if str != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func calculateRemainingNumbersTotal(board Board) int {
+	var total int
+
+	for _, row := range board.Rows {
+		for _, numberStr := range row.Numbers {
+			number, _ := strconv.Atoi(numberStr)
+			total += number
+		}
+	}
+	println(total)
+	return total
 }
