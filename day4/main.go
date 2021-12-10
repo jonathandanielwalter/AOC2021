@@ -71,32 +71,50 @@ func main() {
 	// fmt.Printf("%v\n", allBoards[2])
 
 	//winner, winningNumberStr := playBingo(allBoards, bingoCalledNumbers)
-
-	var winners []Board
+	var boardsBingoed []int
+	//var winners []Board
+	var latestWinner Board
 	var winningNumberStr string
-
 	for _, number := range bingoCalledNumbers {
 		for j := 0; j < len(allBoards)-1; j++ {
-			//for _, board := range allBoards {
-			bingo := playBingo(allBoards[j], number)
-			if bingo {
-				winners = append(winners, allBoards[j])
-				winningNumberStr = number
-				//fmt.Printf("%v\n", allBoards[j])
-				j++
+			//for j, board := range allBoards {
+			if boardNotBingoed(boardsBingoed, j) {
+				bingo := playBingo(allBoards[j], number)
+				if bingo {
+					//println("board not bingoed...")
+					//fmt.Printf("%v", allBoards[j])
+					//winners = append(winners, board)
+					winningNumberStr = number
+					latestWinner = allBoards[j]
+					fmt.Printf("%v\n", latestWinner)
+					//fmt.Printf("%v\n", allBoards[j])
+					boardsBingoed = append(boardsBingoed, j)
+					fmt.Printf("%v\n", boardsBingoed)
+				}
+				//winners = append(winners, winner)
+				//winningNumberStr = numberstr
+				fmt.Printf("latest winner %v\n", latestWinner)
 			}
-			//winners = append(winners, winner)
-			//winningNumberStr = numberstr
 		}
 	}
-
 	winningNumber, _ := strconv.Atoi(winningNumberStr)
 
 	println(winningNumber)
-	fmt.Printf("%v\n", winners)
-	val := calculateRemainingNumbersTotal(winners[len(winners)-1]) * winningNumber
+	//fmt.Printf("%v\n", winners)
+	// println(len(winners))
+
+	val := calculateRemainingNumbersTotal(latestWinner) * winningNumber
 	println(val)
 
+}
+
+func boardNotBingoed(boardsBingoed []int, index int) bool {
+	for _, board := range boardsBingoed {
+		if board == index {
+			return false
+		}
+	}
+	return true
 }
 
 func playBingo(board Board, number string) bool {
