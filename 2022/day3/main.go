@@ -101,32 +101,6 @@ func findSharedGiftValue(currentGroup []string) int {
 	}
 
 	return 0
-	// 	alreadySeenMap := map[rune]bool{}
-	// 	for _, gift := range elfBag {
-
-	// 		_, giftExists := gifts[gift]
-	// 		_, alreadySeen := alreadySeenMap[gift]
-
-	// 		if alreadySeen {
-	// 			continue
-	// 		}
-
-	// 		if giftExists {
-	// 			if gifts[gift] == 3 {
-	// 				return getGiftValue(gift)
-	// 			} else {
-	// 				gifts[gift]++
-	// 			}
-
-	// 		} else {
-	// 			gifts[gift] = 1
-	// 			alreadySeenMap[gift] = true
-	// 		}
-
-	// 	}
-	// }
-
-	// return 0
 }
 
 func getGiftValue(gift rune) int {
