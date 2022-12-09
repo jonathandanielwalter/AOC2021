@@ -76,8 +76,6 @@ func processMove(move string, head *Node) {
 	direction := moveComponents[0]
 	amount, _ := strconv.Atoi(moveComponents[1])
 
-	//adjacent := isTailAdjacent()
-
 	//log.Println(direction)
 	currentNode := head
 	for i := 0; i < amount; i++ {
