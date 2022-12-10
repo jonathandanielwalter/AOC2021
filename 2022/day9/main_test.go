@@ -13,7 +13,7 @@ func TestThis(t *testing.T) {
 		log.Println(err)
 	}
 
-	restOfRope := createRope(11)
+	restOfRope := makeRope(11)
 
 	//head := Node{
 	//	Name:       1,
@@ -26,6 +26,9 @@ func TestThis(t *testing.T) {
 	inputs := strings.Split(string(b), "\n") // running on mac
 
 	for _, move := range inputs {
-		processMove(move, &restOfRope)
+		processMove(move, restOfRope)
+
 	}
+
+	log.Println("")
 }

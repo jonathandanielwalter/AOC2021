@@ -10,10 +10,14 @@ import (
 
 var (
 	visitMap = make(map[string]bool)
+	Rope     []*Pair
 )
 
 //4978 too low
 //5048 too low
+
+// part 2
+// 4989 too high
 
 type Node struct {
 	Name       int
@@ -21,6 +25,11 @@ type Node struct {
 	X          int
 	Y          int
 	ChildNode  *Node
+}
+
+type Pair struct {
+	X int
+	Y int
 }
 
 func main() {
@@ -31,204 +40,112 @@ func main() {
 
 	inputs := strings.Split(string(b), "\n") // running on mac
 
+	makeRope(10)
+
 	visitMap["0,0"] = true
 
-	head := createRope(11)
-
-	log.Println(head)
-
 	for _, move := range inputs {
-		processMove(move, &head)
+		processMove(move, Rope)
 	}
 
+	// log.Println(visitMap)
 	log.Println(len(visitMap))
 }
 
-func createRope(totalNumberOfNodes int) Node {
-	var rootNode *Node
-	var parentNode *Node
-	var currentNode *Node
-
-	for i := 0; i < totalNumberOfNodes; i++ {
-
-		currentNode = &Node{
-			Name:       i + 1,
-			ParentNode: parentNode,
-			X:          0,
-			Y:          0,
-		}
-
-		if i == 0 {
-			rootNode = currentNode
-			parentNode = rootNode
-		} else {
-			parentNode.ChildNode = currentNode
-			parentNode = currentNode
-		}
-
+func makeRope(size int) {
+	for i := 0; i < size; i++ {
+		Rope = append(Rope, &Pair{X: 0, Y: 0})
 	}
-	return *rootNode
 }
 
-func processMove(move string, head *Node) {
+func processMove(move string, rope []*Pair) {
 	moveComponents := strings.Fields(move)
 
 	direction := moveComponents[0]
 	amount, _ := strconv.Atoi(moveComponents[1])
 
-	//log.Println(direction)
-	currentNode := head
 	for i := 0; i < amount; i++ {
-		for currentNode != nil {
-			//log.Println("currentNodeName", currentNode.Name)
-			//log.Printf("moving %s by 1", direction)
-			if currentNode.ParentNode == nil {
-				currentNode = currentNode.ChildNode
-				continue
-			}
-			if direction == "U" {
-				if isNodeAdjacentAfterMove(currentNode.ParentNode.X, currentNode.ParentNode.Y+1, currentNode.X, currentNode.Y) {
-					currentNode.ParentNode.Y++
-				} else {
-					//log.Println("tail not adjacent after move")
-					currentNode.X = currentNode.ParentNode.X
-					currentNode.Y = currentNode.ParentNode.Y
-					currentNode.ParentNode.Y++
-				}
-			}
-			if direction == "D" {
-				if isNodeAdjacentAfterMove(currentNode.ParentNode.X, currentNode.ParentNode.Y-1, currentNode.X, currentNode.Y) {
-					currentNode.ParentNode.Y--
-				} else {
-					currentNode.X = currentNode.ParentNode.X
-					currentNode.Y = currentNode.ParentNode.Y
-					currentNode.ParentNode.Y--
-				}
-
-			}
-			if direction == "L" {
-				if isNodeAdjacentAfterMove(currentNode.ParentNode.X-1, currentNode.ParentNode.Y, currentNode.X, currentNode.Y) {
-					currentNode.ParentNode.X--
-				} else {
-					currentNode.X = currentNode.ParentNode.X
-					currentNode.Y = currentNode.ParentNode.Y
-					currentNode.ParentNode.X--
-				}
-			}
-			if direction == "R" {
-				if isNodeAdjacentAfterMove(currentNode.ParentNode.X+1, currentNode.ParentNode.Y, currentNode.X, currentNode.Y) {
-					currentNode.ParentNode.X++
-				} else {
-					//log.Println("tail not adjacent after move")
-					currentNode.X = currentNode.ParentNode.X
-					currentNode.Y = currentNode.ParentNode.Y
-					currentNode.ParentNode.X++
-				}
-			}
-
-			if currentNode.ChildNode == nil {
-				xString := strconv.Itoa(currentNode.X)
-				yString := strconv.Itoa(currentNode.Y)
-				coords := fmt.Sprintf("%s,%s", xString, yString)
-				log.Printf("number %v is at coords %s, %s", currentNode.Name, xString, yString)
-				visitMap[coords] = true
-			}
-			currentNode = currentNode.ChildNode
+		if direction == "U" {
+			head := rope[0]
+			// headPreviousX := head.X
+			// headPreviousY := head.Y
+			head.Y++
+			moveRope()
+			// bubble(Rope[1], head, headPreviousX, headPreviousY, rope, 1)
 		}
-		currentNode = head
+		if direction == "D" {
+			head := rope[0]
+			// headPreviousX := head.X
+			// headPreviousY := head.Y
+			head.Y--
+			moveRope()
+			// bubble(Rope[1], head, headPreviousX, headPreviousY, rope, 1)
+		}
+		if direction == "L" {
+			head := rope[0]
+			// headPreviousX := head.X
+			// headPreviousY := head.Y
+			head.X--
+			moveRope()
+			// bubble(Rope[1], head, headPreviousX, headPreviousY, rope, 1)
+		}
+		if direction == "R" {
+			head := rope[0]
+			// headPreviousX := head.X
+			// headPreviousY := head.Y
+			head.X++
+			moveRope()
+			// bubble(Rope[1], head, headPreviousX, headPreviousY, rope, 1)
+		}
+
+		// last := rope[len(rope)-1]
+		// xString := strconv.Itoa(last.X)
+		// yString := strconv.Itoa(last.Y)
+		// coords := fmt.Sprintf("%s,%s", xString, yString)
+		// // log.Println(coords)
+		// visitMap[coords] = true
+
 	}
 }
 
-func isNodeAdjacentAfterMove(headX, headY, tailX, tailY int) bool {
-	if headX == tailX && headY == tailY {
-		return true
+func moveRope() {
+	for i := 1; i < len(Rope); i++ {
+		xDelta, yDelta := delta(Rope[i-1].X, Rope[i].X, Rope[i-1].Y, Rope[i].Y)
+
+		if Abs(xDelta) <= 1 && Abs(yDelta) <= 1 {
+			return
+		}
+
+		if yDelta > 0 {
+			Rope[i].Y++
+		} else if yDelta < 0 {
+			Rope[i].Y--
+		}
+		if xDelta > 0 {
+			Rope[i].X++
+		} else if xDelta < 0 {
+			Rope[i].X--
+		}
+
 	}
 
-	xSub := headX - tailX
-
-	//adjacent on the x axis and on the same Y so adjacent
-	if (xSub == 1 || xSub == -1) && headY == tailY {
-		return true
-	}
-
-	ysub := headY - tailY
-	//log.Println("y difference is ", ysub)
-
-	//adjacent on the Y axis and same X axis
-	if (ysub == 1 || ysub == -1) && headX == tailX {
-		return true
-	}
-
-	if (xSub > 1 || xSub < -1) || (ysub > 1 || ysub < -1) {
-		//log.Println("Not adjacent after move")
-		return false
-	}
-
-	return true
+	last := Rope[len(Rope)-1]
+	xString := strconv.Itoa(last.X)
+	yString := strconv.Itoa(last.Y)
+	coords := fmt.Sprintf("%s,%s", xString, yString)
+	// log.Println(coords)
+	visitMap[coords] = true
 }
 
-//func processMove(move string, head Node) {
-//	moveComponents := strings.Fields(move)
-//
-//	direction := moveComponents[0]
-//	amount, _ := strconv.Atoi(moveComponents[1])
-//
-//	//adjacent := isTailAdjacent()
-//
-//	//log.Println(direction)
-//
-//	for i := 0; i < amount; i++ {
-//
-//		nextNode := &head
-//		for nextNode != nil{
-//
-//		}
-//
-//		//log.Printf("moving %s by 1", direction)
-//		if direction == "U" {
-//			if isNodeAdjacentAfterMove(headX, headY+1, tailX, tailY) {
-//				headY++
-//			} else {
-//				//log.Println("tail not adjacent after move")
-//				tailX = headX
-//				tailY = headY
-//				headY++
-//			}
-//		}
-//		if direction == "D" {
-//			if isNodeAdjacentAfterMove(headX, headY-1, tailX, tailY) {
-//				headY--
-//			} else {
-//				tailX = headX
-//				tailY = headY
-//				headY--
-//			}
-//
-//		}
-//		if direction == "L" {
-//			if isNodeAdjacentAfterMove(headX-1, headY, tailX, tailY) {
-//				headX--
-//			} else {
-//				tailX = headX
-//				tailY = headY
-//				headX--
-//			}
-//		}
-//		if direction == "R" {
-//			if isNodeAdjacentAfterMove(headX+1, headY, tailX, tailY) {
-//				headX++
-//			} else {
-//				//log.Println("tail not adjacent after move")
-//				tailX = headX
-//				tailY = headY
-//				headX++
-//			}
-//		}
-//
-//		xString := strconv.Itoa(tailX)
-//		yString := strconv.Itoa(tailY)
-//		coords := fmt.Sprintf("%s,%s", xString, yString)
-//		//log.Println(coords)
-//		visitMap[coords] = true
-//	}
-//}
+func delta(parentX, childX, parentY, childY int) (int, int) {
+	xDelta := parentX - childX
+	yDelta := parentY - childY
+	return xDelta, yDelta
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
