@@ -10,6 +10,7 @@ import (
 var xRegister int = 1
 var currentCycle = 0
 var cycles = []int{220, 180, 140, 100, 60, 20}
+var row = []string{}
 var total int
 
 func main() {
@@ -30,8 +31,9 @@ func main() {
 func run(input string) {
 	if input == "noop" {
 
-		passNextImportantCycle(1)
+		cycles[xRegister]
 
+		passNextImportantCycle(1)
 		currentCycle++
 	} else {
 		value, _ := strconv.Atoi(strings.Fields(input)[1])
