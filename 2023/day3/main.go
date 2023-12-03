@@ -191,15 +191,6 @@ func getAdjacentNumbers(x, y int, matrix [][]rune) []string {
 				adjacentNumbers = append(adjacentNumbers, buildNumber(x+1, y-1, matrix))
 			}
 		}
-
-		// //iterates from top left through the right so we dont duplicate the same number
-		// if x != 0 && unicode.IsDigit(matrix[y-1][x-1]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x-1, y-1, matrix))
-		// } else if unicode.IsDigit(matrix[y-1][x]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x, y-1, matrix))
-		// } else if x < len(matrix[y])-1 && unicode.IsDigit(matrix[y-1][x+1]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x+1, y-1, matrix))
-		// }
 	}
 	//check below
 	if y < len(matrix)-1 {
@@ -214,15 +205,6 @@ func getAdjacentNumbers(x, y int, matrix [][]rune) []string {
 				adjacentNumbers = append(adjacentNumbers, buildNumber(x+1, y+1, matrix))
 			}
 		}
-
-		// //iterates from top left through the right so we dont duplicate the same number
-		// if x != 0 && unicode.IsDigit(matrix[y+1][x-1]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x-1, y+1, matrix))
-		// } else if unicode.IsDigit(matrix[y+1][x]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x, y+1, matrix))
-		// } else if x < len(matrix[y])-1 && unicode.IsDigit(matrix[y+1][x+1]) {
-		// 	adjacentNumbers = append(adjacentNumbers, buildNumber(x+1, y+1, matrix))
-		// }
 	}
 
 	return adjacentNumbers
