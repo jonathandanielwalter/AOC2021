@@ -16,7 +16,7 @@ var temperatureToHumidity []input
 var humidityToLocation []input
 
 func main() {
-	file, err := os.ReadFile("/Users/jonathanwalter/dev/Advent-of-code/2023/day5/input.txt")
+	file, err := os.ReadFile("input.txt")
 	//file, err := os.ReadFile("input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -25,7 +25,7 @@ func main() {
 	blocks := strings.Split(string(file), "\n")
 	blocks = removeBlanks(blocks)
 	//
-	//partOne(blocks)
+	// partOne(blocks)
 	partTwo(blocks)
 }
 
@@ -58,35 +58,29 @@ func partTwo(lines []string) {
 	seedInts := convertSeedInts(seedStrings)
 	createInputSets(lines[1:])
 
-	var allSeeds = map[int]bool{}
-
+	var lowestLocation *int
 	for i := 0; i < len(seedInts); i += 2 {
 		seed := seedInts[i]
 		rangeVal := seedInts[i+1]
 
-		allSeeds[seed] = true
+		for x := 0; x < rangeVal; x++ {
+			soil := getDestinationValue(seed, seedToSoil)
+			fertilizer := getDestinationValue(soil, soilToFertilizer)
+			water := getDestinationValue(fertilizer, fertilizerToWater)
+			light := getDestinationValue(water, waterToLight)
+			temperature := getDestinationValue(light, lightToTemperature)
+			humidity := getDestinationValue(temperature, temperatureToHumidity)
+			location := getDestinationValue(humidity, humidityToLocation)
 
-		for x := 1; x < rangeVal; x++ {
-			allSeeds[seed+x] = true
+			if lowestLocation == nil {
+				lowestLocation = &location
+			} else if location < *lowestLocation {
+				lowestLocation = &location
+			}
+			seed++
 		}
 	}
 
-	var lowestLocation *int
-	for seed, _ := range allSeeds {
-		soil := getDestinationValue(seed, seedToSoil)
-		fertilizer := getDestinationValue(soil, soilToFertilizer)
-		water := getDestinationValue(fertilizer, fertilizerToWater)
-		light := getDestinationValue(water, waterToLight)
-		temperature := getDestinationValue(light, lightToTemperature)
-		humidity := getDestinationValue(temperature, temperatureToHumidity)
-		location := getDestinationValue(humidity, humidityToLocation)
-
-		if lowestLocation == nil {
-			lowestLocation = &location
-		} else if location < *lowestLocation {
-			lowestLocation = &location
-		}
-	}
 	log.Println(*lowestLocation)
 }
 
