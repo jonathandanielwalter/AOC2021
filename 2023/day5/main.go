@@ -24,9 +24,9 @@ func main() {
 
 	blocks := strings.Split(string(file), "\n")
 	blocks = removeBlanks(blocks)
-
-	//log.Println(blocks)
-	partOne(blocks)
+	//
+	//partOne(blocks)
+	partTwo(blocks)
 }
 
 func partOne(lines []string) {
@@ -34,22 +34,71 @@ func partOne(lines []string) {
 	seedInts := convertSeedInts(seedStrings)
 	createInputSets(lines[1:])
 
-	//var lowestLocation int
+	var lowestLocation *int
 	for _, seed := range seedInts {
-		soil := getDestinationValue(seed)
-		log.Println(soil)
+		soil := getDestinationValue(seed, seedToSoil)
+		fertilizer := getDestinationValue(soil, soilToFertilizer)
+		water := getDestinationValue(fertilizer, fertilizerToWater)
+		light := getDestinationValue(water, waterToLight)
+		temperature := getDestinationValue(light, lightToTemperature)
+		humidity := getDestinationValue(temperature, temperatureToHumidity)
+		location := getDestinationValue(humidity, humidityToLocation)
+
+		if lowestLocation == nil {
+			lowestLocation = &location
+		} else if location < *lowestLocation {
+			lowestLocation = &location
+		}
 	}
+	log.Println(*lowestLocation)
 }
 
-func getDestinationValue(source int) int {
-	var soil int
-	for _, row := range seedToSoil {
-		soil = row.source //if its not in a range use the soruce
+func partTwo(lines []string) {
+	seedStrings := strings.Fields(strings.Split(lines[0], ":")[1])
+	seedInts := convertSeedInts(seedStrings)
+	createInputSets(lines[1:])
+
+	var allSeeds = map[int]bool{}
+
+	for i := 0; i < len(seedInts); i += 2 {
+		seed := seedInts[i]
+		rangeVal := seedInts[i+1]
+
+		allSeeds[seed] = true
+
+		for x := 1; x < rangeVal; x++ {
+			allSeeds[seed+x] = true
+		}
+	}
+
+	var lowestLocation *int
+	for seed, _ := range allSeeds {
+		soil := getDestinationValue(seed, seedToSoil)
+		fertilizer := getDestinationValue(soil, soilToFertilizer)
+		water := getDestinationValue(fertilizer, fertilizerToWater)
+		light := getDestinationValue(water, waterToLight)
+		temperature := getDestinationValue(light, lightToTemperature)
+		humidity := getDestinationValue(temperature, temperatureToHumidity)
+		location := getDestinationValue(humidity, humidityToLocation)
+
+		if lowestLocation == nil {
+			lowestLocation = &location
+		} else if location < *lowestLocation {
+			lowestLocation = &location
+		}
+	}
+	log.Println(*lowestLocation)
+}
+
+func getDestinationValue(source int, inputs []input) int {
+	var destination int
+	for _, row := range inputs {
+		destination = row.source //if its not in a range use the soruce
 		if source >= row.source && source < (row.source+row.valueRange) {
 			diff := source - row.source
 
-			soil = row.destination + diff
-			return soil
+			destination = row.destination + diff
+			return destination
 		}
 	}
 	return source
