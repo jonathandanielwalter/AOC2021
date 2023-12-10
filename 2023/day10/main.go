@@ -48,6 +48,7 @@ type coord struct {
 	x             int
 	y             int
 	fromDirection string
+	toDirection   string
 }
 
 var rows [][]string
@@ -57,53 +58,88 @@ func partOne(scanner *bufio.Scanner) {
 	for scanner.Scan() {
 		rows = append(rows, strings.Split(scanner.Text(), ""))
 	}
-	log.Println(rows)
-
-	var startTile coord
-
+	var currentTile coord
 	for y, row := range rows {
 		for x, tile := range row {
 			if tile == "S" {
-				startTile = coord{x: x, y: y}
+				currentTile = coord{x: x, y: y}
 			}
 		}
 	}
+	var previousTile coord
+	var distanceTravelled int
 
-	checkTile(startTile, "", 0, startTile)
-	log.Println(loopLength/2 + 1)
+	for true {
 
+		coords := neighborCoordinates(currentTile.x, currentTile.y)
+		for _, c := range coords {
+			currentTileValue := rows[currentTile.y][currentTile.x]
+			if currentTileValue == "S" && distanceTravelled > 0 {
+				break
+			}
+			adjacentTile := rows[c.y][c.x]
 
-	
-}
+			if adjacentTile == "." {
+				continue
+			} else if adjacentTile == "S" {
+				if c.x == previousTile.x && c.y == previousTile.y {
+					continue
+				}
+				if isFinalConnection(c.fromDirection, c.toDirection, currentTileValue) {
+					loopLength = distanceTravelled
+					currentTile = c
+					break
+				}
+			} else {
+				if !(c.x == previousTile.x && c.y == previousTile.y) && isConnectingPipe(c.fromDirection, c.toDirection, adjacentTile, currentTileValue) {
+					previousTile = currentTile
+					currentTile = c
+					distanceTravelled++
+					break
+				}
+			}
 
-func checkTile(currentTile coord, travellingDirection string, distanceTravelled int, previousTile coord) {
-	for _, c := range neighborCoordinates(currentTile.x, currentTile.y) {
+		}
 		if rows[currentTile.y][currentTile.x] == "S" && distanceTravelled > 0 {
 			break
 		}
-		adjacentTile := rows[c.y][c.x]
+	}
 
-		switch adjacentTile {
-		case ".":
-			continue
-		case "S": //found a loop
-			if (c.x == previousTile.x && c.y == previousTile.y){
-				continue
+	log.Println(loopLength/2 + 1)
+
+}
+
+func isConnectingPipe(fromDirection string, toDirection string, destinationTile string, originTile string) bool {
+	allowableOrigins := pipeDirectory[originTile].connectingDirections
+
+	allowed := false
+
+	if originTile != "S" {
+		for _, allowableOrigin := range allowableOrigins {
+			if toDirection == allowableOrigin {
+				allowed = true
 			}
-			loopLength = distanceTravelled
-			break
-		default:
-			if !(c.x == previousTile.x && c.y == previousTile.y) && isConnectingPipe(c.fromDirection, adjacentTile) {
-				checkTile(c, c.fromDirection, distanceTravelled+1, currentTile)
-			}
+		}
+		if !allowed {
+			return false
+		}
+	}
+
+	for _, direction := range pipeDirectory[destinationTile].connectingDirections {
+		if direction == fromDirection {
+			return true
 		}
 
 	}
+
+	return false
 }
 
-func isConnectingPipe(travellingDirection string, tile string) bool {
-	for _, direction := range pipeDirectory[tile].connectingDirections {
-		if direction == travellingDirection {
+func isFinalConnection(fromDirection string, toDirection string, originTile string) bool {
+	allowableOrigins := pipeDirectory[originTile].connectingDirections
+
+	for _, allowableOrigin := range allowableOrigins {
+		if toDirection == allowableOrigin {
 			return true
 		}
 	}
@@ -116,18 +152,18 @@ func neighborCoordinates(x, y int) []coord {
 	var coords []coord
 
 	if y != 0 {
-		coords = append(coords, coord{x: x, y: y - 1, fromDirection: "S"})
+		coords = append(coords, coord{x: x, y: y - 1, fromDirection: "S", toDirection: "N"})
 	}
 	if y != len(rows)-1 {
-		coords = append(coords, coord{x: x, y: y + 1, fromDirection: "N"})
+		coords = append(coords, coord{x: x, y: y + 1, fromDirection: "N", toDirection: "S"})
 	}
 
 	if x != 0 {
-		coords = append(coords, coord{x: x - 1, y: y, fromDirection: "E"})
+		coords = append(coords, coord{x: x - 1, y: y, fromDirection: "E", toDirection: "W"})
 	}
 
 	if x != len(rows[0])-1 {
-		coords = append(coords, coord{x: x + 1, y: y, fromDirection: "W"})
+		coords = append(coords, coord{x: x + 1, y: y, fromDirection: "W", toDirection: "E"})
 	}
 
 	return coords
