@@ -2,13 +2,14 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 )
 
 func main() {
-	file, err := os.Open("testinput.txt")
+	file, err := os.Open("/Users/jonathanwalter/dev/Advent-of-code/2023/day11/testinput.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -16,10 +17,10 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	run(scanner)
-
 }
 
 func run(scanner *bufio.Scanner) {
+	pairs := map[string]int{}
 	galaxy := [][]string{}
 
 	for scanner.Scan() {
@@ -30,9 +31,85 @@ func run(scanner *bufio.Scanner) {
 	//log.Println(galaxy)
 
 	expand(galaxy)
+
+	for y, row := range galaxy {
+		for x, cell := range row {
+			if cell == "#" {
+				start := fmt.Sprintf("%v,%v", x, y)
+
+				//traverse right
+				traverseRight(pairs, row, start, x, y, 0)
+
+				vericalDistance := 0
+				//traverseDown left and right
+				if y != len(galaxy)-1 { //if we're not at the last row
+					for g := y + 1; g < len(galaxy); g++ {
+						if galaxy[g][x] == "." {
+							vericalDistance++
+						} else if galaxy[g][x] == "X" {
+							vericalDistance = vericalDistance + 2
+						} else { //reached a planet
+							end := fmt.Sprintf("%v,%v", x, g)
+							addToMap(pairs, start, end, vericalDistance)
+							vericalDistance++
+						}
+						traverseRight(pairs, galaxy[g], start, x, g, vericalDistance)
+						traverseLeft(pairs, galaxy[g], start, x, g, vericalDistance)
+					}
+
+				}
+			}
+		}
+	}
+	log.Printf("%v", pairs)
 }
 
-func expand(galaxy [][]string) {
+func traverseRight(pairs map[string]int, row []string, startingCoord string, x, y, verticalDistance int) {
+	horizontalDistance := 0
+	//traverse right
+	for i := x; i < len(row); i++ {
+		if row[i] == "." {
+			horizontalDistance++
+		} else if row[i] == "X" {
+			horizontalDistance = horizontalDistance + 2
+		} else { //reached a planet
+			end := fmt.Sprintf("%v,%v", i, y)
+			addToMap(pairs, startingCoord, end, horizontalDistance+verticalDistance)
+			horizontalDistance++
+		}
+	}
+}
+
+func traverseLeft(pairs map[string]int, row []string, startingCoord string, x, y, verticalDistance int) {
+	horizontalDistance := 0
+	//traverse right
+	for i := x; i >= 0; i-- {
+		if row[i] == "." {
+			horizontalDistance++
+		} else if row[i] == "X" {
+			horizontalDistance = horizontalDistance + 2
+		} else { //reached a planet
+			end := fmt.Sprintf("%v,%v", i, y)
+			addToMap(pairs, startingCoord, end, horizontalDistance+verticalDistance)
+			horizontalDistance++
+		}
+	}
+}
+
+func addToMap(theMap map[string]int, start string, end string, distance int) {
+
+	if start != end {
+		_, startFirst := theMap[fmt.Sprintf("%s-%s", start, end)]
+		_, endFirst := theMap[fmt.Sprintf("%s-%s", end, start)]
+
+		if !(startFirst || endFirst) {
+			theMap[fmt.Sprintf("%s-%s", start, end)] = distance
+		}
+	}
+
+}
+
+func expand(galaxy [][]string) [][]string {
 	for y := 0; y < len(galaxy); y++ {
 		allTheSame := true
 		for _, column := range galaxy[y] {
@@ -42,8 +119,10 @@ func expand(galaxy [][]string) {
 			}
 		}
 		if allTheSame {
-			galaxy = append(galaxy[:y+1], galaxy[y:]...)
-			y++
+			for x, _ := range galaxy[y] {
+				galaxy[y][x] = "X"
+			}
+
 		}
 	}
 
@@ -52,7 +131,7 @@ func expand(galaxy [][]string) {
 	for x := 0; x < len(galaxy[0]); x++ {
 		allTheSame := true
 		for y := 0; y < len(galaxy); y++ {
-			if galaxy[y][x] != "." {
+			if galaxy[y][x] == "#" {
 				allTheSame = false
 			}
 		}
@@ -61,14 +140,15 @@ func expand(galaxy [][]string) {
 		}
 	}
 
-	for i, index := range sameIndexes {
+	for _, index := range sameIndexes {
 		for y := 0; y < len(galaxy); y++ {
-			galaxy[y] = append(galaxy[y][:index+i+1], galaxy[y][index+i:]...)
+			//galaxy[y] = append(galaxy[y][:index+i+1], galaxy[y][index+i:]...)
+			galaxy[y][index] = "X"
 		}
 	}
 
-	for _, row := range galaxy {
-		log.Println(row)
-	}
-
+	//for _, row := range galaxy {
+	//	log.Println(row)
+	//}
+	return galaxy
 }
