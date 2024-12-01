@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("testinput.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,6 +55,7 @@ type coord struct {
 var rows [][]string
 var loopLength int
 var loopCoordinates map[string]string
+var loop []coord
 
 func run(scanner *bufio.Scanner) {
 	loopCoordinates = map[string]string{}
@@ -89,14 +90,16 @@ func run(scanner *bufio.Scanner) {
 					continue
 				}
 				if isFinalConnection(c.fromDirection, c.toDirection, currentTileValue) {
-					addCoordinateToMap(currentTile)
+					addCoordinateToMap(currentTile, currentTileValue)
+					loop = append(loop, currentTile)
 					loopLength = distanceTravelled
 					currentTile = c
 					break
 				}
 			} else {
 				if !(c.x == previousTile.x && c.y == previousTile.y) && isConnectingPipe(c.fromDirection, c.toDirection, adjacentTile, currentTileValue) {
-					addCoordinateToMap(currentTile)
+					addCoordinateToMap(currentTile, currentTileValue)
+					loop = append(loop, currentTile)
 					previousTile = currentTile
 					currentTile = c
 					distanceTravelled++
@@ -110,95 +113,30 @@ func run(scanner *bufio.Scanner) {
 		}
 	}
 
-	numberInside := 0
+	// https://en.wikipedia.org/wiki/Shoelace_formula
+	area := 0
+	for i := 0; i < len(loop); i++ {
+		cur := loop[i]
+		next := loop[(i+1)%len(loop)]
 
-	//
-
-	// for y, row := range rows {
-	// 	firstReached := false
-	// 	threshholdsCrossed := 0
-	// 	for x, _ := range row {
-	// 		coordString := fmt.Sprintf("%s,%s", fmt.Sprint(x), fmt.Sprint(y))
-	// 		previousCoord := fmt.Sprintf("%s,%s", fmt.Sprint(x-1), fmt.Sprint(y))
-	// 		if _, ok := loopCoordinates[coordString]; ok {
-	// 			if !firstReached {
-	// 				threshholdsCrossed++
-	// 			} else {
-	// 				//if this pipe is connected to the last pipe, we dont count it as a threshhold crossed
-	// 				if x != 0 {
-	// 					if _, ok := loopCoordinates[previousCoord]; ok {
-
-	// 						previousTile := rows[y][x-1]
-	// 						currentTile := rows[y][x]
-	// 						nextTile := rows[y][x+1]
-	// 						if isPipeConnectedBothWays("W", "E", currentTile, previousTile, nextTile) {
-	// 							continue //ignore this tile
-	// 						}else{
-	// 							threshholdsCrossed++
-	// 						}
-
-	// 					}else{
-	// 						threshholdsCrossed++
-	// 					}
-	// 				}
-	// 			}
-	// 		} else {
-	// 			if threshholdsCrossed != 0 && threshholdsCrossed%2 == 1 {
-	// 				numberInside++
-	// 			}
-	// 			// if _, ok := loopCoordinates[previousCoord]; ok {
-	// 			// 	threshholdsCrossed++
-	// 			// }
-
-	// 		}
-	// 	}
-	// }
-
-	var cleanRows [][]string
-
-	for _, row := range rows{
-		var tiles []string
-		for i:=0; i < len(row); i++{
-			tiles = append(tiles, ".")
-		}
-		cleanRows = append(cleanRows, tiles)
+		area += cur.x*next.y - cur.y*next.x
 	}
 
-	for k, v := range loopCoordinates{
-		
+	if area < 0 {
+		area = -area
 	}
+	area /= 2
 
-	for y, row := range rows {
-		threshholdsCrossed := 0
-		for x, _ := range row {
-			coordString := fmt.Sprintf("%s,%s", fmt.Sprint(x), fmt.Sprint(y))
-			if _, ok := loopCoordinates[coordString]; ok {
-				continue
-			}
-			for i := x; i < len(row); i++ {
-				coordString := fmt.Sprintf("%s,%s", fmt.Sprint(i), fmt.Sprint(y))
-				if _, ok := loopCoordinates[coordString]; ok {
-					if row[i] == "-" {
-						continue
-					} else {
-						threshholdsCrossed++
-					}
-				}
-			}
-			if threshholdsCrossed != 0 && threshholdsCrossed%2 == 1 {
-				numberInside++
-			}
-			threshholdsCrossed = 0
-		}
-	}
+	// https://en.wikipedia.org/wiki/Pick%27s_theorem
+	answer := polygonArea - len(loopCoordinates)/2 + 1
 
 	log.Println("part 1", loopLength/2+1)
-	log.Println("part 2", numberInside)
+	log.Println("part 2", answer)
 }
 
-func addCoordinateToMap(c coord) {
+func addCoordinateToMap(c coord, tile string) {
 	coordString := fmt.Sprintf("%s,%s", fmt.Sprint(c.x), fmt.Sprint(c.y))
-	loopCoordinates[coordString] = true
+	loopCoordinates[coordString] = tile
 }
 
 func isConnectingPipe(fromDirection string, toDirection string, destinationTile string, originTile string) bool {

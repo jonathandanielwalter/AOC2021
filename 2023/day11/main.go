@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("/Users/jonathanwalter/dev/Advent-of-code/2023/day11/testinput.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,10 +28,8 @@ func run(scanner *bufio.Scanner) {
 		galaxy = append(galaxy, row)
 	}
 
-	//log.Println(galaxy)
-
 	expand(galaxy)
-
+	log.Println(galaxy)
 	for y, row := range galaxy {
 		for x, cell := range row {
 			if cell == "#" {
@@ -47,11 +45,12 @@ func run(scanner *bufio.Scanner) {
 						if galaxy[g][x] == "." {
 							vericalDistance++
 						} else if galaxy[g][x] == "X" {
-							vericalDistance = vericalDistance + 2
+							vericalDistance = vericalDistance + 1000000
 						} else { //reached a planet
 							end := fmt.Sprintf("%v,%v", x, g)
-							addToMap(pairs, start, end, vericalDistance)
 							vericalDistance++
+							addToMap(pairs, start, end, vericalDistance)
+							
 						}
 						traverseRight(pairs, galaxy[g], start, x, g, vericalDistance)
 						traverseLeft(pairs, galaxy[g], start, x, g, vericalDistance)
@@ -61,17 +60,24 @@ func run(scanner *bufio.Scanner) {
 			}
 		}
 	}
-	log.Printf("%v", pairs)
+	// log.Printf("%v\n", pairs)
+
+	total := 0
+	for _, v := range pairs {
+		total += v
+	}
+	log.Println(total)
+	// log.Println(len(pairs))
 }
 
 func traverseRight(pairs map[string]int, row []string, startingCoord string, x, y, verticalDistance int) {
-	horizontalDistance := 0
+	horizontalDistance := 1
 	//traverse right
-	for i := x; i < len(row); i++ {
+	for i := x + 1; i < len(row); i++ {
 		if row[i] == "." {
 			horizontalDistance++
 		} else if row[i] == "X" {
-			horizontalDistance = horizontalDistance + 2
+			horizontalDistance = horizontalDistance + 1000000
 		} else { //reached a planet
 			end := fmt.Sprintf("%v,%v", i, y)
 			addToMap(pairs, startingCoord, end, horizontalDistance+verticalDistance)
@@ -81,13 +87,13 @@ func traverseRight(pairs map[string]int, row []string, startingCoord string, x, 
 }
 
 func traverseLeft(pairs map[string]int, row []string, startingCoord string, x, y, verticalDistance int) {
-	horizontalDistance := 0
+	horizontalDistance := 1
 	//traverse right
-	for i := x; i >= 0; i-- {
+	for i := x-1; i >= 0; i-- {
 		if row[i] == "." {
 			horizontalDistance++
 		} else if row[i] == "X" {
-			horizontalDistance = horizontalDistance + 2
+			horizontalDistance = horizontalDistance + 1000000
 		} else { //reached a planet
 			end := fmt.Sprintf("%v,%v", i, y)
 			addToMap(pairs, startingCoord, end, horizontalDistance+verticalDistance)
