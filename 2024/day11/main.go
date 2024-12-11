@@ -16,10 +16,11 @@ func main() {
 	input := string(content)
 	initialNumbers := strings.Fields(input)
 	fmt.Println(part1(AtoiList(initialNumbers)))
+	fmt.Println(part2(AtoiList(initialNumbers)))
 }
 
 func part1(inputs []uint64) int {
-	for c := 0; c < 75; c++ {
+	for c := 0; c < 25; c++ {
 		var amended []uint64
 		for _, input := range inputs {
 			switch {
@@ -43,6 +44,46 @@ func part1(inputs []uint64) int {
 	}
 
 	return len(inputs)
+}
+
+func part2(inputs []uint64) int {
+	stones := map[uint64]int{}
+	for _, in := range inputs {
+		stones[in]++
+	}
+
+	for c := 0; c < 75; c++ {
+		amended := map[uint64]int{}
+		for key, input := range stones {
+
+			for i := 0; i < input; i++ {
+				switch {
+				case key == 0:
+					amended[1]++
+				case len(strconv.FormatUint(key, 10))%2 == 0:
+					str := strconv.FormatUint(key, 10)
+					a := str[:len(str)/2]
+					b := str[len(str)/2:]
+					ai, _ := strconv.ParseUint(a, 10, 64)
+					bi, _ := strconv.ParseUint(b, 10, 64)
+					amended[ai]++
+					amended[bi]++
+
+				default:
+					amended[key*2024]++
+				}
+			}
+
+		}
+		stones = amended
+	}
+
+	var count int
+	for _, val := range stones {
+		count += val
+	}
+
+	return count
 }
 
 func AtoiList(list []string) []uint64 {
